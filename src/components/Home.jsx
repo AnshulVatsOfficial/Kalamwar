@@ -39,7 +39,7 @@ const Home = () => {
                 <div className="mx-auto max-w-2xl pt-20 sm:py-32 lg:pt-32 lg:pb-0 mb-0">
                     <div className="text-center">
                         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl hero-text">
-                        Join Kalamwar and feel true essence of Rap.
+                        Join KalamWar and feel true essence of Rap.
                         </h1>
                         <p className="mt-6 text-lg leading-8 text-gray-600">
                         A Digital Crew for Underground Rappers to Earn Revenue, Reach New Audience and Get Discovered...

@@ -8,9 +8,11 @@ import CrewMembers from './components/CrewMembers';
 import UploadVideo from './components/UploadVideo';
 import ErrorPage from './pages/ErrorPage';
 import Login from './components/Login';
+import { ChakraProvider } from '@chakra-ui/react';
 
 function App() {
     return (
+        <ChakraProvider>
         <Router>
             <Navbar />
             <Routes>
@@ -22,6 +24,7 @@ function App() {
                 <Route exact path="/login" element={<Login />} />
             </Routes>
         </Router>
+        </ChakraProvider>
     );
 }
 

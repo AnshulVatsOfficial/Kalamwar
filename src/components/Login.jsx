@@ -29,10 +29,6 @@ const Login = () => {
     let navigate = useNavigate();
     const toast = useToast();//using Chakra UI Toast
 
-    // localStorage.setItem("isAccountCreated", false);
-    // localStorage.setItem("isSignedIn", false);
-    // localStorage.setItem("isSignedInWithGoogle", false);
-
         //create new account
         const createNewAccount = (event) => {
             event.preventDefault();
@@ -50,9 +46,10 @@ const Login = () => {
                         status: 'success',
                         duration: 2000,
                         isClosable: true,
-                        position: 'top-right',
+                        position: 'top',
                     });
-                    window.location.reload();
+                    // window.location.reload();
+                    console.log("Account created Successfully");
                 })
                 .catch((error) => {
                     console.log(error);        
@@ -84,7 +81,7 @@ const Login = () => {
                     localStorage.setItem("isSignedIn", true);
                     toast({
                         title: 'Signin Successful !',
-                        description: "You're signed in into BlackInk",
+                        description: "You're signed in into KalamWar",
                         status: 'success',
                         duration: 2000,
                         isClosable: true,
@@ -94,18 +91,25 @@ const Login = () => {
                     setTimeout(() => {
                         navigate("/");
                         window.location.reload();
-                    }, 3000);
+                    }, 2500);
                 })
                 .catch((error) => {
                     const errorCode = error.code;
                     const errorMessage = error.message;
-                    alert("Invalid Username or Password !");
+                    toast({
+                        title: 'Invalid Username or Password !',
+                        description: "Please try again.",
+                        status: 'error',
+                        duration: 2000,
+                        isClosable: true,
+                        position: 'top',
+                    });
                 });
             }
             else{//If user is already signed in with Google
                 toast({
                     title: "You're already signed in !",
-                    description: "You're already signed in into BlackInk",
+                    description: "You're already signed in into KalamWar",
                     status: 'success',
                     duration: 2000,
                     isClosable: true,

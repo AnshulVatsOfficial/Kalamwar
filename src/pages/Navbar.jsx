@@ -48,11 +48,11 @@ const Navbar = () => {
             console.log(user);
             toast({
                 title: 'Signin Successful !',
-                description: "You're signed in into Kalamwar",
+                description: "You're signed in into KalamWar",
                 status: 'success',
                 duration: 2000,
                 isClosable: true,
-                position: 'top-right',
+                position: 'top',
             });
             setTimeout(() => {
                 navigate("/");
@@ -64,6 +64,26 @@ const Navbar = () => {
             const email = error.customData.email;
             const credential = GoogleAuthProvider.credentialFromError(error);
             console.log(errorMessage);
+        });
+    }
+
+    const SignOutOfAccount = () => {
+        signOut(auth).
+        then(()=>{
+            localStorage.setItem("isSignedIn", false);
+            localStorage.setItem("isSignedInWithGoogle", false);
+            toast({
+                title: 'Signout Successful !',
+                description: "You're signed out of KalamWar",
+                status: 'success',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+            setTimeout(() => {
+                navigate("/");
+                window.location.reload();
+            }, 2500);
         });
     }
 
@@ -97,15 +117,25 @@ const Navbar = () => {
                     </Link>
                     ))}
                 </div>
-                <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                    <Link to="/login" className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Create Account
-                    </Link>
+                {
+                    localStorage.getItem("isSignedInWithGoogle") == "true"
+                    ?
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        <Link onClick={SignOutOfAccount} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Sign Out
+                        </Link>
+                    </div>
+                    :
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        <Link to="/login" className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Create Account
+                        </Link>
 
-                    <Link onClick={loginWithGoogle} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Log in with google
-                    </Link>
-                </div>             
+                        <Link onClick={loginWithGoogle} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Log in with google
+                        </Link>
+                    </div>
+                }
                 </nav>
                 <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
                 <div className="fixed inset-0 z-50" />
@@ -136,6 +166,7 @@ const Navbar = () => {
                             </Link>
                         ))}
                         </div>
+
                         <div className="py-6">
                         <Link
                             to="/login"
@@ -144,6 +175,7 @@ const Navbar = () => {
                             Create Account
                         </Link>
                         </div>
+
                         <div className="py-6">
                         <Link
                             to="/login"

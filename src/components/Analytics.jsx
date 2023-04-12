@@ -1,7 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import * as React from 'react';
+
 
 const Analytics = () => {
+
     return (
         <div>
             Analytics

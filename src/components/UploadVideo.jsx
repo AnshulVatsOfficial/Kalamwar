@@ -1,8 +1,11 @@
 import * as React from 'react';
+import { useToast } from '@chakra-ui/react';
 
 const UploadVideo = () => {
     const [videoTitle, setVideoTitle] = React.useState("");
-    const [videoTitleLength, setVideoTitleLength] = React.useState(0);
+    const [videoTitleLength, setVideoTitleLength] = React.useState(100);
+
+    const toast = useToast();//using Chakra UI Toast
 
     return (
         <section id="contact-section">
@@ -13,7 +16,7 @@ const UploadVideo = () => {
                     Submit your video to KalamWar at ZERO Cost
                     </p>
                 </div>
-                <form action="#" method="POST" className="mx-auto mt-12 max-w-xl sm:mt-12">
+                <form action="#" className="mx-auto mt-12 max-w-xl sm:mt-12">
                     <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                     <div>
                         <label htmlFor="first-name" className="block text-sm font-semibold leading-6 text-gray-900">Video Title</label>
@@ -27,11 +30,21 @@ const UploadVideo = () => {
                             maxLength={100}
                             onChange={(event)=>{
                                 setVideoTitle(event.target.value);
-                                setVideoTitleLength(event.target.value.length);
+                                setVideoTitleLength(100 - event.target.value.length);
+                                if(100 - event.target.value.length == 0){
+                                    toast({
+                                        title: "You've reached maximum title length",
+                                        description: "Title should be within 100 characters",
+                                        status: 'error',
+                                        duration: 2000,
+                                        isClosable: true,
+                                        position: 'top',
+                                    });
+                                }
                             }}
                             className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                         />
-                        <p>{videoTitleLength} characters written</p>
+                        <p>{videoTitleLength} characters left</p>
                         </div>
                     </div>
                     <div>

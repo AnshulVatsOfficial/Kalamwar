@@ -17,7 +17,7 @@ function App() {
             <Navbar />
             <Routes>
                 <Route exact path="/" element={<Home />} />
-                <Route exact path="/uploadvideo" element={<UploadVideo />} />
+                <Route exact path="/submitvideo" element={<UploadVideo />} />
                 <Route exact path="/analytics" element={<Analytics />} />
                 <Route exact path="/crewmembers" element={<CrewMembers />} />
                 <Route exact path="/pagenotfound" element={<ErrorPage />} />

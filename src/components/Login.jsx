@@ -48,8 +48,9 @@ const Login = () => {
                         isClosable: true,
                         position: 'top',
                     });
-                    // window.location.reload();
-                    console.log("Account created Successfully");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2500);
                 })
                 .catch((error) => {
                     console.log(error);        

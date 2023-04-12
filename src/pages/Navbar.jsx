@@ -18,7 +18,7 @@ const firebaseConfig = {
 
 const navigation = [
     { name: 'Home', to: "/" },
-    { name: 'Upload Video', to: "/uploadvideo" },
+    { name: 'Submit Video', to: "/submitvideo" },
     { name: 'Analytics', to: "/analytics" },
     { name: 'Crew Members', to: "/crewmembers" },
   ];
@@ -42,6 +42,8 @@ const Navbar = () => {
         event.preventDefault();
         signInWithPopup(auth, provider)
         .then((result) => {
+            localStorage.setItem("isSignedIn", true);
+            localStorage.setItem("isSignedInWithGoogle", true);
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
             const user = result.user;
@@ -108,17 +110,25 @@ const Navbar = () => {
                     </button>
                 </div>
                 <div className="hidden lg:flex lg:gap-x-8">
-                    {navigation.map((item) => (
-                    <Link key={item.name} to={item.to} className={classNames(
-                        item.current ? 'bg-white text-black font-bold' : 'text-black hover:bg-blue-600 hover:text-white font-bold',
-                        'rounded-md px-2 py-2 text-sm font-medium'
-                      )}>
-                        {item.name}
-                    </Link>
-                    ))}
+                    <Link key="Home" to="/" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Home</Link>
+                    {
+                        localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
+                        ?
+                        <Link key="submit Video" to="/submitvideo" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Submit Video</Link>
+                        :
+                        <></>
+                    }
+                    {
+                        localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
+                        ?
+                        <Link key="Profile" to="/analytics" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Profile</Link>
+                        :
+                        <></>
+                    }
+                    <Link key="Crew Members" to="/crewmembers" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Crew Members</Link>
                 </div>
                 {
-                    localStorage.getItem("isSignedInWithGoogle") == "true"
+                    localStorage.getItem("isSignedInWithGoogle") == "true" || localStorage.getItem("isSignedIn") == "true"
                     ?
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                         <Link onClick={SignOutOfAccount} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -155,35 +165,85 @@ const Navbar = () => {
                     </div>
                     <div className="mt-6 flow-root">
                     <div className="-my-6 divide-y divide-gray-500/10">
-                        <div className="space-y-2 py-6">
-                        {navigation.map((item) => (
+                        <div className="space-y-2 py-6">                      
                             <Link
-                            key={item.name}
-                            to={item.to}
+                            key="Home"
+                            to="/"
                             className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                             >
-                            {item.name}
+                            Home
                             </Link>
-                        ))}
+                            {
+                                localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
+                                ?
+                                <Link
+                                    key="submitVideo"
+                                    to="/submitvideo"
+                                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                                    >
+                                    Submit Video
+                                </Link>
+                                :
+                                <></>
+                            }
+
+                            {
+                                localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
+                                ?
+                                <Link
+                                    key="Profile"
+                                    to="/analytics"
+                                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                                    >
+                                    Profile
+                                </Link>
+                                :
+                                <></>
+                            }
+
+                            <Link
+                            key="CrewMembers"
+                            to="/crewmembers"
+                            className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                            >
+                            Crew Members
+                            </Link>
                         </div>
 
-                        <div className="py-6">
-                        <Link
-                            to="/login"
-                            className="-mx-3 block rounded-lg px-3 py-2.5 text-sm font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
-                            Create Account
-                        </Link>
-                        </div>
+                        {
+                            localStorage.getItem("isSignedInWithGoogle") == "true" || localStorage.getItem("isSignedIn") == "true"
+                            ?
+                            <div className="py-6">
+                                <Link
+                                    to="/login"
+                                    onClick={SignOutOfAccount}
+                                    className="-mx-3 block rounded-lg px-3 py-2.5 text-sm font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    Sign Out
+                                </Link>
+                            </div>
+                            :
+                            <>
+                            <div className="py-6">
+                                <Link
+                                    to="/login"
+                                    className="-mx-3 block rounded-lg px-3 py-2.5 text-sm font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    Create Account
+                                </Link>
+                            </div>
 
-                        <div className="py-6">
-                        <Link
-                            to="/login"
-                            className="-mx-3 block rounded-lg px-3 py-2.5 text-sm font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
-                            Log in with google
-                        </Link>
-                        </div>
+                            <div className="py-6">
+                            <Link
+                                to="/login"
+                                onClick={loginWithGoogle}
+                                className="-mx-3 block rounded-lg px-3 py-2.5 text-sm font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            >
+                                Log in with google
+                            </Link>
+                            </div>
+                            </>
+                        }          
                     </div>
                     </div>
                 </Dialog.Panel>

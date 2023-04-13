@@ -5,6 +5,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getDatabase } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Link } from 'react-router-dom';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAthGH887jVfq1cynOlwZHb4vCvgWui0Kw",
@@ -34,6 +35,7 @@ const SubmitVideo = () => {
     const [videoThumbnailPreview, setVideoThumbnailPreview] = React.useState("");
     const [thumbnailUrl, setThumbnailUrl] = React.useState("");
     const [thumbnailName, setThumbnailName] = React.useState("");//setting name of thumbnail same as video title
+    const [isMetadataUploaded, setIsMetadataUploaded] = React.useState(false);
 
     // const [videoFile, setVideoFile] = React.useState({});
     // const [isVideoAttached, setIsVideoAttached] = React.useState(false);
@@ -77,8 +79,8 @@ const SubmitVideo = () => {
         title: videoTitle,
         description: videoDesc,
         artist: artistName,
-        author: userDisplayName,
-        authorId: userId
+        artistInstaId: instaAccount,
+        artistYouTubeChannel: youtubeAccount
     }
 
     //uploading video thumbnail to Firebase Storage
@@ -117,6 +119,7 @@ const SubmitVideo = () => {
         else{
             await addDoc(videoCollectionRef, videoMetadata)
             .then((resolve)=>{
+                setIsMetadataUploaded(true);
                 console.log(resolve);
                 toast({
                     title: 'Metadata posted successfully !',
@@ -130,9 +133,9 @@ const SubmitVideo = () => {
             .catch((error)=>{
                 console.log(error);
             });
-            setTimeout(() => {
-                window.location.reload();
-            }, 2500);
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 2500);
         }
         }
 
@@ -146,211 +149,231 @@ const SubmitVideo = () => {
                     </p>
                 </div>
                 <form className="mx-auto mt-12 max-w-xl sm:mt-12">
-                    <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-
-                    {/* Video Title */}
-                    <div className="">
-                        <label htmlFor="video-title" className="block text-sm font-semibold leading-6 text-gray-900">Video Title *</label>           
-                        <div className="mt-2.5">
-                        <input
-                            type="text"
-                            name="video-title"
-                            id="video-title"
-                            autoComplete="videoTitle"
-                            placeholder="Enter your video title"
-                            maxLength={100}
-                            value={videoTitle}
-                            onChange={(event)=>{
-                                setVideoTitle(event.target.value);
-                                setVideoTitleLength(100 - event.target.value.length);
-                                setThumbnailName(event.target.value);
-                                if(100 - event.target.value.length === 0){
-                                    toast({
-                                        title: "You've reached maximum title length",
-                                        description: "Title should be maximum of 100 characters",
-                                        status: 'error',
-                                        duration: 2000,
-                                        isClosable: true,
-                                        position: 'top',
-                                    });
-                                }
-                            }}
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
-                        <p>{videoTitleLength} characters left</p>
-                        </div>
-                    </div>
-
-                    {/* Video Description */}
-                    <div className="">
-                        <label htmlFor="video-desc" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Artist Name *
-                        </label>
-                        <div className="mt-2.5">
-                        <input
-                            type="text"
-                            name="artist-name"
-                            id="artist-name"
-                            autoComplete="artistName"
-                            placeholder="Enter artist name"
-                            maxLength={50}
-                            value={artistName}
-                            onChange={(event)=>{
-                                setArtistName(event.target.value);
-                                setArtistNameLength(50 - event.target.value.length);
-                                if(50 - event.target.value.length === 0){
-                                    toast({
-                                        title: "You've reached maximum length for artist name",
-                                        description: "Artist Name should be maximum of 50 characters",
-                                        status: 'error',
-                                        duration: 2000,
-                                        isClosable: true,
-                                        position: 'top',
-                                    });
-                                }
-                            }}
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
-                        <p>{artistNameLength} characters left</p>
-                        </div>
-                    </div>
-
-                    {/* Artist's Instagram Account*/}
-                    <div className="">
-                        <label htmlFor="insta-account" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Your Instagram Account Link (optional)
-                        </label>
-                        <div className="mt-2.5">
-                        <input
-                            type="text"
-                            name="insta-account"
-                            id="insta-account"
-                            autoComplete="instagramAccount"
-                            placeholder="Enter your instagram account link"
-                            onChange={(event)=>{
-                                setInstaAccount(event.target.value);
-                            }}
-                            value={instaAccount}
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
-                        </div>
-                    </div>
-
-                    {/* Artist's YouTube Channel */}
-                    <div className="">
-                        <label htmlFor="youtube-channel" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Your YouTube Channel Link (optional)
-                        </label>
-                        <div className="mt-2.5">
-                        <input
-                            type="text"
-                            name="youtube-channel"
-                            id="youtube-channel"
-                            autoComplete="youtubeChannel"
-                            placeholder="Enter your YouTube channel link"
-                            maxLength={5000}
-                            onChange={(event)=>{
-                                setYoutubeAccount(event.target.value);
-                            }}
-                            value={youtubeAccount}
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
-                        </div>
-                    </div>
-
-                    {/* Video Thumbnail */}
-                    {/* <div className="sm:col-span-2">
-                        <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Upload Thumbnail *
-                        </label>
-                        <div className="mt-2.5">
-                        <input
-                            type="file"
-                            name="video-thumbnail"
-                            id="video-thumbnail"
-                            accept="image/*"
-                            onChange={(event)=>{
-                                setVideoThumbnail(event.target.files[0]);
-                                setIsThumbnailAttached(true);
-                                setVideoThumbnailPreview(URL.createObjectURL(event.target.files[0]));
-                            }}
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
-                        </div>
-                    </div> */}
-                    
-                    {/* Preview Video Thumbnail */}
-                    {/* {
-                        isThumbnailAttached
+                    {
+                        isMetadataUploaded
                         ?
                         <div className="sm:col-span-2">
-                            <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">Thumbnail Preview</label>
-                            <img
-                                src={videoThumbnailPreview}
-                                className="sm:w-[57rem] md:-ml-4 lg:-ml-0"
-                                width={1280}
-                                height={720}
-                            />
+                            <label htmlFor="video-file" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Upload Video *
+                            </label>
+                            <div className="mt-2.5">
+                                <Link
+                                    to="https://driveuploader.com/upload/3sln4dCtKm/"
+                                    id="video-file"
+                                    target='_blank'
+                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                >Upload Video to Drive</Link>
+                            </div>
                         </div>
                         :
-                        <></>
-                    } */}
+                        <>
+                        <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
 
-                    {/* Video file */}
-                    {/* <div className="sm:col-span-2">
-                        <label htmlFor="video-file" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Upload Video *
-                        </label>
-                        <div className="mt-2.5">
-                        <Link
-                            id="video-file"
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        >Upload Video to Drive</Link>
+                        {/* Video Title */}
+                        <div className="">
+                            <label htmlFor="video-title" className="block text-sm font-semibold leading-6 text-gray-900">Video Title *</label>           
+                            <div className="mt-2.5">
+                            <input
+                                type="text"
+                                name="video-title"
+                                id="video-title"
+                                autoComplete="videoTitle"
+                                placeholder="Enter your video title"
+                                maxLength={100}
+                                value={videoTitle}
+                                onChange={(event)=>{
+                                    setVideoTitle(event.target.value);
+                                    setVideoTitleLength(100 - event.target.value.length);
+                                    setThumbnailName(event.target.value);
+                                    if(100 - event.target.value.length === 0){
+                                        toast({
+                                            title: "You've reached maximum title length",
+                                            description: "Title should be maximum of 100 characters",
+                                            status: 'error',
+                                            duration: 2000,
+                                            isClosable: true,
+                                            position: 'top',
+                                        });
+                                    }
+                                }}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            <p>{videoTitleLength} characters left</p>
+                            </div>
                         </div>
-                    </div> */}
 
-                    <div className="sm:col-span-2">
-                        <label htmlFor="message" className="block text-sm font-semibold leading-6 text-gray-900">
-                        Video Description *
-                        </label>
-                        <div className="mt-2.5">
-                        <textarea
-                            name="video-desc"
-                            id="video-desc"
-                            rows={4}
-                            maxLength={5000}
-                            value={videoDesc}
-                            onChange={(event)=>{
-                                setVideoDesc(event.target.value);
-                                setVideoDescLength(5000 - event.target.value.length);
-                                if(5000 - event.target.value.length === 0){
-                                    toast({
-                                        title: "You've reached maximum desc. length",
-                                        description: "Desc. should be maximum of 5000 characters",
-                                        status: 'error',
-                                        duration: 2000,
-                                        isClosable: true,
-                                        position: 'top',
-                                    });
-                                }
-                            }}
-                            placeholder="Enter video description"
-                            className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        />
+                        {/* Video Description */}
+                        <div className="">
+                            <label htmlFor="video-desc" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Artist Name *
+                            </label>
+                            <div className="mt-2.5">
+                            <input
+                                type="text"
+                                name="artist-name"
+                                id="artist-name"
+                                autoComplete="artistName"
+                                placeholder="Enter artist name"
+                                maxLength={50}
+                                value={artistName}
+                                onChange={(event)=>{
+                                    setArtistName(event.target.value);
+                                    setArtistNameLength(50 - event.target.value.length);
+                                    if(50 - event.target.value.length === 0){
+                                        toast({
+                                            title: "You've reached maximum length for artist name",
+                                            description: "Artist Name should be maximum of 50 characters",
+                                            status: 'error',
+                                            duration: 2000,
+                                            isClosable: true,
+                                            position: 'top',
+                                        });
+                                    }
+                                }}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            <p>{artistNameLength} characters left</p>
+                            </div>
                         </div>
-                        <p>{videoDescLength} characters left</p>
-                    </div>
 
-                    </div>
-                    <div className="mt-10">
-                    <button
-                        type="submit"
-                        onClick={uploadMetadata}
-                        className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                        Submit Video
-                    </button>
-                    </div>
+                        {/* Artist's Instagram Account*/}
+                        <div className="">
+                            <label htmlFor="insta-account" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Your Instagram Account Link (optional)
+                            </label>
+                            <div className="mt-2.5">
+                            <input
+                                type="url"
+                                name="insta-account"
+                                id="insta-account"
+                                autoComplete="instagramAccount"
+                                placeholder="Enter your instagram account link"
+                                onChange={(event)=>{
+                                    setInstaAccount(event.target.value);
+                                }}
+                                value={instaAccount}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            </div>
+                        </div>
+
+                        {/* Artist's YouTube Channel */}
+                        <div className="">
+                            <label htmlFor="youtube-channel" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Your YouTube Channel Link (optional)
+                            </label>
+                            <div className="mt-2.5">
+                            <input
+                                type="url"
+                                name="youtube-channel"
+                                id="youtube-channel"
+                                autoComplete="youtubeChannel"
+                                placeholder="Enter your YouTube channel link"
+                                maxLength={5000}
+                                onChange={(event)=>{
+                                    setYoutubeAccount(event.target.value);
+                                }}
+                                value={youtubeAccount}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            </div>
+                        </div>
+
+                        {/* Video Thumbnail */}
+                        {/* <div className="sm:col-span-2">
+                            <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Upload Thumbnail *
+                            </label>
+                            <div className="mt-2.5">
+                            <input
+                                type="file"
+                                name="video-thumbnail"
+                                id="video-thumbnail"
+                                accept="image/*"
+                                onChange={(event)=>{
+                                    setVideoThumbnail(event.target.files[0]);
+                                    setIsThumbnailAttached(true);
+                                    setVideoThumbnailPreview(URL.createObjectURL(event.target.files[0]));
+                                }}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            </div>
+                        </div> */}
+
+                        {/* Preview Video Thumbnail */}
+                        {/* {
+                            isThumbnailAttached
+                            ?
+                            <div className="sm:col-span-2">
+                                <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">Thumbnail Preview</label>
+                                <img
+                                    src={videoThumbnailPreview}
+                                    className="sm:w-[57rem] md:-ml-4 lg:-ml-0"
+                                    width={1280}
+                                    height={720}
+                                />
+                            </div>
+                            :
+                            <></>
+                        } */}
+
+                        {/* Video file */}
+                        {/* <div className="sm:col-span-2">
+                            <label htmlFor="video-file" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Upload Video *
+                            </label>
+                            <div className="mt-2.5">
+                            <Link
+                                id="video-file"
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            >Upload Video to Drive</Link>
+                            </div>
+                        </div> */}
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="message" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Video Description *
+                            </label>
+                            <div className="mt-2.5">
+                            <textarea
+                                name="video-desc"
+                                id="video-desc"
+                                rows={4}
+                                maxLength={5000}
+                                value={videoDesc}
+                                onChange={(event)=>{
+                                    setVideoDesc(event.target.value);
+                                    setVideoDescLength(5000 - event.target.value.length);
+                                    if(5000 - event.target.value.length === 0){
+                                        toast({
+                                            title: "You've reached maximum desc. length",
+                                            description: "Desc. should be maximum of 5000 characters",
+                                            status: 'error',
+                                            duration: 2000,
+                                            isClosable: true,
+                                            position: 'top',
+                                        });
+                                    }
+                                }}
+                                placeholder="Enter video description"
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            </div>
+                            <p>{videoDescLength} characters left</p>
+                        </div>
+
+                        </div>
+                        <div className="mt-10">
+                        <button
+                            type="submit"
+                            onClick={uploadMetadata}
+                            className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        >
+                            Upload Metadata
+                        </button>
+                        </div>
+                        </>
+                    }
                 </form>
             </div>
         </section>

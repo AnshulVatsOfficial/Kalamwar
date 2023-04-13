@@ -6,6 +6,7 @@ import Home from './components/Home';
 import Analytics from './components/Analytics';
 import CrewMembers from './components/CrewMembers';
 import UploadVideo from './components/UploadVideo';
+import SubmitVideo from './components/SubmitVideo';
 import ErrorPage from './pages/ErrorPage';
 import Login from './components/Login';
 import { ChakraProvider } from '@chakra-ui/react';
@@ -17,7 +18,7 @@ function App() {
             <Navbar />
             <Routes>
                 <Route exact path="/" element={<Home />} />
-                <Route exact path="/submitvideo" element={<UploadVideo />} />
+                <Route exact path="/submitvideo" element={<SubmitVideo />} />
                 <Route exact path="/analytics" element={<Analytics />} />
                 <Route exact path="/crewmembers" element={<CrewMembers />} />
                 <Route exact path="/pagenotfound" element={<ErrorPage />} />

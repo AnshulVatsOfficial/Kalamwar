@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useToast } from '@chakra-ui/react';
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -15,7 +15,8 @@ const firebaseConfig = {
     appId: "1:690053929167:web:e8e180b9b92e7b2a48bfba"
   };
 
-const UploadVideo = () => {
+const SubmitVideo = () => {
+
     const [videoTitle, setVideoTitle] = React.useState("");
     const [videoTitleLength, setVideoTitleLength] = React.useState(100);
 
@@ -52,132 +53,88 @@ const UploadVideo = () => {
     const storage = getStorage(app);//taking reference of firebase storage
     const database = getFirestore(app);//taking reference of firestore database
 
-    const thumbnailMetaData = {//metadata for blog poster being uploaded to Firebase Storage
-        contentType: 'image/*'
-    }
+    // const thumbnailMetaData = {//metadata for blog poster being uploaded to Firebase Storage
+    //     contentType: '/*'
+    // }
 
-    const auth = getAuth();//getting user uid even after refresh so that page content gets displayed even after refreshing it
-    onAuthStateChanged(auth, (user) => {
-        if(user){
-            const uid = user.uid;
-            const userName = user.displayName;
-            setUserDisplayName(userName);
-            setUserId(uid);
-        }
-        else{
-            console.log("Error gettting UID");
-        }
-    });
+    // const auth = getAuth();//getting user uid even after refresh so that page content gets displayed even after refreshing it
+    // onAuthStateChanged(auth, (user) => {
+    //     if(user){
+    //         const uid = user.uid;
+    //         const userName = user.displayName;
+    //         setUserDisplayName(userName);
+    //         setUserId(uid);
+    //     }
+    //     else{
+    //         console.log("Error gettting UID");
+    //     }
+    // });
 
     //creating reference to store video's metadata in a collection named "Videos" in Firestore Database
-    const VideoCollectionRef = collection(database, "Videos");
+    const videoCollectionRef = collection(database, "Videos");
 
     const videoMetadata = {//metadata for each video
         title: videoTitle,
         description: videoDesc,
         artist: artistName,
-        videoThumbnailUrl: thumbnailUrl,
         author: userDisplayName,
         authorId: userId
     }
 
     //uploading video thumbnail to Firebase Storage
-    const uploadVideoThumbnail = (event) => {
+    const uploadMetadata = async (event) => {
         event.preventDefault();
-        // if(videoTitle.length == 0){
-        //     toast({
-        //         title: "Please enter video title !",
-        //         status: 'error',
-        //         duration: 2000,
-        //         isClosable: true,
-        //         position: 'top',
-        //     });
-        // }
-
-        // else if(artistName.length == 0){
-        //     toast({
-        //         title: "Please enter artist name !",
-        //         status: 'error',
-        //         duration: 2000,
-        //         isClosable: true,
-        //         position: 'top',
-        //     });
-        // }
-
-        // else if(!isThumbnailAttached){
-        //     toast({
-        //         title: "Please attach a thumbnail !",
-        //         status: 'error',
-        //         duration: 2000,
-        //         isClosable: true,
-        //         position: 'top',
-        //     });
-        // }
-
-        // else if(videoDesc.length == 0){
-        //     toast({
-        //         title: "Please enter video description !",
-        //         status: 'error',
-        //         duration: 2000,
-        //         isClosable: true,
-        //         position: 'top',
-        //     });
-        // }
-
-        if(videoTitle.length != 0){// && isThumbnailAttached == true
-            const storageRef = ref(storage, thumbnailName);
-            const uploadTask = uploadBytesResumable(storageRef, videoThumbnail, thumbnailMetaData);
-
-            uploadTask.on('state_changed',
-            (snapshot) => {
-                // Getting task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload is ' + progress + '% done');
-                switch (snapshot.state) {
-                case 'paused':
-                    console.log('Upload is paused');
-                    break;
-                case 'running':
-                    console.log('Upload is running');
-                    break;
-                }
-            },
-            (error) => {
-                switch (error.code) {
-                case 'storage/unauthorized':
-                    break;
-                case 'storage/canceled':
-                    break;
-                case 'storage/unknown':
-                    break;
-                }
-            },
-            ()=>{
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    setThumbnailUrl(downloadURL);
-                    toast({
-                        title: "Thumbnail uploaded successfully !",
-                        status: 'success',
-                        duration: 2000,
-                        isClosable: true,
-                        position: 'top',
-                    });
-                });
-                console.log(thumbnailUrl);
-            }
-            );
-        }
-
-        else{
+        if(videoTitle.length == 0){
             toast({
-                title: "Error uploading thumbnail !",
+                title: "Please enter video title !",
                 status: 'error',
                 duration: 2000,
                 isClosable: true,
                 position: 'top',
             });
         }
-    }
+
+        else if(artistName.length == 0){
+            toast({
+                title: "Please enter artist name !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoDesc.length == 0){
+            toast({
+                title: "Please enter video description !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else{
+            await addDoc(videoCollectionRef, videoMetadata)
+            .then((resolve)=>{
+                console.log(resolve);
+                toast({
+                    title: 'Metadata posted successfully !',
+                    description: "",
+                    status: 'success',
+                    duration: 2000,
+                    isClosable: true,
+                    position: 'top',
+                });
+            })
+            .catch((error)=>{
+                console.log(error);
+            });
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+        }
+        }
 
     return (
         <section id="contact-section">
@@ -388,7 +345,7 @@ const UploadVideo = () => {
                     <div className="mt-10">
                     <button
                         type="submit"
-                        onClick={uploadVideoThumbnail}
+                        onClick={uploadMetadata}
                         className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
                         Submit Video
@@ -400,4 +357,4 @@ const UploadVideo = () => {
     );
 }
 
-export default UploadVideo;
+export default SubmitVideo;

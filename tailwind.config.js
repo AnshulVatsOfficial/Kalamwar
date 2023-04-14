@@ -1,3 +1,5 @@
+const { GoogleApis } = require('googleapis');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,js,jsx}"],
@@ -6,6 +8,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/forms'),
+    require('googleapis')
   ],
 }
 

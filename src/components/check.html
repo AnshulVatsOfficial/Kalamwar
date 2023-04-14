@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="module">
+        const { google } = require('googleapis');
+        const path = require('path');
+        const fs = require('fs');
+
+        const CLIENT_ID = '690053929167-9m5irr1jpjrp2lgk2uauo06l28ir4pt2.apps.googleusercontent.com';
+        const CLIENT_SECRET = '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';
+        const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
+        const REFRESH_TOKEN = '1//04K_veZsoM3kWCgYIARAAGAQSNwF-L9IrNEVl3ruHLZlGlbquPyP3eh5iTNC0PcTGKkICBwmQjkIHlaVsvc9kGKNJxoGQ_AxF22s';
+
+        const oauth2Client = new google.auth.OAuth2(
+        CLIENT_ID,
+        CLIENT_SECRET,
+        REDIRECT_URI
+        );
+
+        oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+        const drive = google.drive({
+        version: 'v3',
+        auth: oauth2Client,
+        });
+
+        const filePath = path.join(__dirname, 'reactimage.png');
+
+        async function uploadFile() {
+        try {
+            const response = await drive.files.create({
+            requestBody: {
+                name: 'reactimage.png', //This can be name of your choice
+                mimeType: 'image/png',
+            },
+            media: {
+                mimeType: 'image/png',
+                body: fs.createReadStream(filePath),
+            },
+            });
+            alert("File uploaded successfully !");
+            console.log(response.data);
+        } catch (error) {
+            alert("File was not uploaded successfully...");
+            console.log(error.message);
+        }
+        }
+    </script>
+</head>
+<body>
+    <button onclick="uploadFile()">Upload File</button>
+</body>
+</html>

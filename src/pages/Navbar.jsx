@@ -89,6 +89,17 @@ const Navbar = () => {
         });
     }
 
+    const handleCrewMembersAction = () => {
+        toast({
+            title: 'Will be available soon...',
+            description: '',
+            status: 'warning',
+            duration: 2000,
+            isClosable: true,
+            position: 'top',
+        });
+    }
+
     return (
         <section id="navbar">
         <div className="bg-white">
@@ -111,24 +122,24 @@ const Navbar = () => {
                 </div>
                 <div className="hidden lg:flex lg:gap-x-8">
                     <Link key="Home" to="/" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Home</Link>
+
                     {
                         localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
                         ?
-                        <Link key="submit Video" to="/submitvideo" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Submit Video</Link>
+                        <>
+                            <Link key="submit Video" to="/submitvideo" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Submit Video</Link>
+                            {/* <Link key="Profile" to="/analytics" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Profile</Link> */}
+                        </>
                         :
                         <></>
                     }
-                    {
-                        localStorage.getItem("isAccountCreated") == "true" && localStorage.getItem("isSignedIn") == "true"
-                        ?
-                        <Link key="Profile" to="/analytics" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Profile</Link>
-                        :
-                        <></>
-                    }
-                    <Link key="Crew Members" to="/crewmembers" className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Crew Members</Link>
+
+                    <Link key="Crew Members" onClick={handleCrewMembersAction} className='text-black hover:bg-blue-600 hover:text-white font-bold rounded-md px-2 py-2 text-sm'>Crew Members</Link>
                 </div>
                 {
-                    localStorage.getItem("isSignedInWithGoogle") == "true" || localStorage.getItem("isSignedIn") == "true"
+                    localStorage.getItem("isAccountCreated") == "true"
+                    ?
+                    localStorage.getItem("isSignedIn") == "true"
                     ?
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                         <Link onClick={SignOutOfAccount} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -138,6 +149,17 @@ const Navbar = () => {
                     :
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                         <Link to="/login" className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Log In Now
+                        </Link>
+
+                        <Link onClick={loginWithGoogle} className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        Log in with google
+                        </Link>
+                    </div>
+                    :
+                    <>
+                    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                        <Link to="/login" className="leading-6 rounded-md bg-indigo-600 px-3 py-2 lg:mx-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                         Create Account
                         </Link>
 
@@ -145,6 +167,7 @@ const Navbar = () => {
                         Log in with google
                         </Link>
                     </div>
+                    </>
                 }
                 </nav>
                 <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>

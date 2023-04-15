@@ -35,7 +35,7 @@ const Home = () => {
         {/* Hero Section */}
         <section id="hero-section">
         <div className="bg-white mb-0">
-            <div className="relative isolate px-6 pt-14 lg:px-8">
+            <div className="relative isolate px-6 pt-24 lg:px-8">
                 <div className="mx-auto max-w-2xl pt-20 sm:py-32 lg:pt-32 lg:pb-0 mb-0">
                     <div className="text-center">
                         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl hero-text">
@@ -45,12 +45,25 @@ const Home = () => {
                         A Digital Crew for Underground Rappers to Earn Revenue, Reach New Audience and Get Discovered...
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
-                        <Link
-                            to="/login"
-                            className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
-                            Get started <span aria-hidden="true">&rarr;</span>
-                        </Link>
+                            {
+                                localStorage.getItem("isSignedIn") == "true"
+                                ?
+                                <>
+                                <Link
+                                    to="/submitvideo"
+                                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    Start Uploading <span aria-hidden="true">&rarr;</span>
+                                </Link>
+                                </>
+                                :
+                                <Link
+                                    to="/login"
+                                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                    Get started <span aria-hidden="true">&rarr;</span>
+                                </Link>
+                            }
                         </div>
                     </div>
                 </div>

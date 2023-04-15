@@ -1,11 +1,11 @@
 import React from 'react';
 import { useToast } from '@chakra-ui/react';
 import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, uploadBytes } from "firebase/storage";
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getDatabase } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAthGH887jVfq1cynOlwZHb4vCvgWui0Kw",
@@ -24,6 +24,9 @@ const SubmitVideo = () => {
     const [artistName, setArtistName] = React.useState("");
     const [artistNameLength, setArtistNameLength] = React.useState(50);
 
+    const [songName, setSongName] = React.useState("");
+    const [songNameLength, setSongNameLength] = React.useState(50);
+
     const [videoDesc, setVideoDesc] = React.useState("");
     const [videoDescLength, setVideoDescLength] = React.useState(5000);
 
@@ -32,14 +35,18 @@ const SubmitVideo = () => {
 
     const [videoThumbnail, setVideoThumbnail] = React.useState({});
     const [isThumbnailAttached, setIsThumbnailAttached] = React.useState(false);
-    const [videoThumbnailPreview, setVideoThumbnailPreview] = React.useState("");
     const [thumbnailUrl, setThumbnailUrl] = React.useState("");
     const [thumbnailName, setThumbnailName] = React.useState("");//setting name of thumbnail same as video title
+    const [isThumbnailUploaded, setIsThumbnailUploaded] = React.useState(false);
     const [isMetadataUploaded, setIsMetadataUploaded] = React.useState(false);
 
     const [videoFile, setVideoFile] = React.useState({});
     const [isVideoAttached, setIsVideoAttached] = React.useState(false);
-    // const [videoFilePreview, setVideoFilePreview] = React.useState("");
+    const [videoFileName, setVideoFileName] = React.useState("");
+    const [videoFileUrl, setVideoFileUrl] = React.useState("");
+    const [isVideoUploaded, setIsVideoUploaded] = React.useState(false);
+
+    const [progressPercentage, setProgressPercentage] = React.useState(0);
 
     const [userId, setUserId] = React.useState("");
     const [userDisplayName, setUserDisplayName] = React.useState("");
@@ -51,13 +58,19 @@ const SubmitVideo = () => {
 
     const toast = useToast();//using Chakra UI Toast
 
+    let navigate = useNavigate();//to navigate to any other page
+
     const app = initializeApp(firebaseConfig);//initializing firebase
     const storage = getStorage(app);//taking reference of firebase storage
     const database = getFirestore(app);//taking reference of firestore database
 
-    // const thumbnailMetaData = {//metadata for blog poster being uploaded to Firebase Storage
-    //     contentType: '/*'
-    // }
+    const thumbnailMetaData = {//metadata for video thumbnail being uploaded to Firebase Storage
+        contentType: 'image/*'
+    }
+
+    const videoMetaData = {//metadata for video file being uploaded to Firebase Storage
+        contentType: 'video/*'
+    }
 
     // const auth = getAuth();//getting user uid even after refresh so that page content gets displayed even after refreshing it
     // onAuthStateChanged(auth, (user) => {
@@ -75,20 +88,33 @@ const SubmitVideo = () => {
     //creating reference to store video's metadata in a collection named "Videos" in Firestore Database
     const videoCollectionRef = collection(database, "Videos");
 
-    const videoMetadata = {//metadata for each video
+    const allMetadata = {//important metadata for each video
+        trackName: songName,
         title: videoTitle,
-        description: videoDesc,
         artist: artistName,
         artistInstaId: instaAccount,
-        artistYouTubeChannel: youtubeAccount
+        artistYouTubeChannel: youtubeAccount,
+        description: videoDesc
     }
 
-    //uploading video thumbnail to Firebase Storage
-    const uploadMetadata = async (event) => {
+    //uploading video thumbnail to firebase storage
+
+    const uploadVideoThumbnail = (event) => {
         event.preventDefault();
-        if(videoTitle.length == 0){
+
+        if(songName.length == 0){
             toast({
-                title: "Please enter video title !",
+                title: "Please enter song name !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoTitle.length == 0){
+            toast({
+                title: "Please enter title !",
                 status: 'error',
                 duration: 2000,
                 isClosable: true,
@@ -106,9 +132,19 @@ const SubmitVideo = () => {
             });
         }
 
-        else if(videoDesc.length == 0){
+        else if(isThumbnailAttached == false){
             toast({
-                title: "Please enter video description !",
+                title: "Please attach thumbnail !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(songName != thumbnailName.split('.')[0]){
+            toast({
+                title: "name mismatch !",
                 status: 'error',
                 duration: 2000,
                 isClosable: true,
@@ -117,7 +153,244 @@ const SubmitVideo = () => {
         }
 
         else{
-            await addDoc(videoCollectionRef, videoMetadata)
+            toast({
+                title: 'Upload in process...',
+                description: "",
+                status: 'info',
+                duration: 1500,
+                isClosable: true,
+                position: 'top',
+            });
+
+            const storageRef = ref(storage, thumbnailName);
+            const uploadTask = uploadBytesResumable(storageRef, videoThumbnail, thumbnailMetaData);
+                uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                        break;
+                    case 'running':
+                        console.log('Upload is running');
+                        break;
+                    }
+                },
+                (error) => {
+                    switch (error.code) {
+                    case 'storage/unauthorized':
+                        break;
+                    case 'storage/canceled':
+                        break;
+                    case 'storage/unknown':
+                        break;
+                    }
+                },
+                () => {
+                    // Upload completed successfully, now we can get the download URL and use it
+                    getDownloadURL(uploadTask.snapshot.ref)
+                    .then((downloadURL) => {
+                        setIsThumbnailUploaded(true);
+                        setThumbnailUrl(downloadURL);
+                        console.log('File available at', downloadURL);
+                    });
+                    toast({
+                        title: 'Uploaded Successfully !',
+                        description: "",
+                        status: 'success',
+                        duration: 2500,
+                        isClosable: true,
+                        position: 'top',
+                    });
+                }
+            );
+        }
+    }
+
+    //uploading video file to firebase storage
+    const uploadVideoFile = (event) => {
+        event.preventDefault();
+
+        if(songName.length == 0){
+            toast({
+                title: "Please enter song name !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoTitle.length == 0){
+            toast({
+                title: "Please enter title !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(isVideoAttached == false){
+            toast({
+                title: "Please attach video !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(songName != videoFileName.split('.')[0]){
+            toast({
+                title: "name mismatch !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoTitle.length != 0 && isVideoAttached == true){
+
+            toast({
+                title: 'Upload in process...',
+                description: "",
+                status: 'info',
+                duration: 1500,
+                isClosable: true,
+                position: 'top',
+            });
+
+
+            // let tempVideoFileName = `video/${videoTitle}`;
+            // console.log(tempVideoFileName);
+            // setVideoFileName(tempVideoFileName);
+            
+            const storageRef = ref(storage, videoFileName);
+            const uploadTask = uploadBytesResumable(storageRef, videoFile, videoMetaData);
+                uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    setProgressPercentage(progress);
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                        break;
+                    case 'running':
+                        console.log('Upload is running');
+                        break;
+                    }
+                },
+                (error) => {
+                    switch (error.code) {
+                    case 'storage/unauthorized':
+                        break;
+                    case 'storage/canceled':
+                        break;
+                    case 'storage/unknown':
+                        break;
+                    }
+                }, 
+                () => {
+                    // Upload completed successfully, now we can get the download URL and use it
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        setIsVideoUploaded(true);
+                        setVideoFileUrl(downloadURL);
+                        console.log('File available at', downloadURL);
+                    });
+                    toast({
+                        title: 'Uploaded Successfully !',
+                        description: "",
+                        status: 'success',
+                        duration: 2500,
+                        isClosable: true,
+                        position: 'top',
+                    });
+                }
+            );
+        }
+    }
+
+    //uploading video metadata to Firebase's Firestore Database
+    const uploadMetadata = async (event) => {
+        event.preventDefault();
+
+        if(songName.length == 0){
+            toast({
+                title: "Please enter song name !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoTitle.length == 0){
+            toast({
+                title: "Please enter title !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(artistName.length == 0){
+            toast({
+                title: "Please enter artist name !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(!isThumbnailUploaded){
+            toast({
+                title: "Please upload thumbnail !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(!isVideoUploaded){
+            toast({
+                title: "Please upload video !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoDesc.length == 0){
+            toast({
+                title: "Please enter description !",
+                status: 'error',
+                duration: 2000,
+                isClosable: true,
+                position: 'top',
+            });
+        }
+
+        else if(videoTitle.length != 0 && artistName.length != 0 && isThumbnailUploaded == true && isVideoUploaded == true && videoDesc.length != 0){
+            toast({
+                title: 'Upload in process...',
+                description: "",
+                status: 'info',
+                duration: 1500,
+                isClosable: true,
+                position: 'top',
+            });
+
+            await addDoc(videoCollectionRef, allMetadata)
             .then((resolve)=>{
                 setIsMetadataUploaded(true);
                 console.log(resolve);
@@ -129,32 +402,15 @@ const SubmitVideo = () => {
                     isClosable: true,
                     position: 'top',
                 });
+                setTimeout(() => {
+                    navigate("/");
+                }, 3000);
             })
             .catch((error)=>{
                 console.log(error);
             });
-            // setTimeout(() => {
-            //     window.location.reload();
-            // }, 2500);
         }
-        }
-
-        function guardarArchivo(e) {
-            setVideoFile(e.target.files[0]);
-            setIsVideoAttached(true);
-            // var file = e.target.files[0] //the file
-            var reader = new FileReader() //this for convert to Base64 
-            reader.readAsDataURL(e.target.files[0]) //start conversion...
-            reader.onload = function (e) { //.. once finished..
-              var rawLog = reader.result.split(',')[1]; //extract only thee file data part
-              var dataSend = { dataReq: { data: rawLog, name: videoFile.name, type: videoFile.type }, fname: "uploadFilesToGoogleDrive" }; //preapre info to send to API
-              fetch('https://script.google.com/macros/s/AKfycbwcLqrESmi7j6BKp9ARYUt682wwkOZC8EJC7LpVuQLgRWdaoQw/exec', //your AppsScript URL
-                { method: "POST", body: JSON.stringify(dataSend) }) //send to Api
-                .then(res => res.json()).then((a) => {
-                  console.log(a) //See response
-                }).catch(e => console.log(e)) // Or Error in console
-            }
-          }
+    }
 
     return (
         <section id="contact-section">
@@ -167,44 +423,28 @@ const SubmitVideo = () => {
                 </div>
                 <form className="mx-auto mt-12 max-w-xl sm:mt-12">
                     {
-                        isMetadataUploaded
-                        ?
-                        <div className="sm:col-span-2">
-                            <label htmlFor="video-file" className="block text-sm font-semibold leading-6 text-gray-900">
-                            Upload Video *
-                            </label>
-                            <div className="mt-2.5">
-                                <Link
-                                    id="video-file"
-                                    target='_blank'
-                                    className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                >Upload Video to Drive</Link>
-                            </div>
-                        </div>
-                        :
                         <>
                         <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
 
-                        {/* Video Title */}
+                        {/* Song Name */}
                         <div className="">
-                            <label htmlFor="video-title" className="block text-sm font-semibold leading-6 text-gray-900">Video Title *</label>           
+                            <label htmlFor="song-name" className="block text-sm font-semibold leading-6 text-gray-900">Song Name *</label>           
                             <div className="mt-2.5">
                             <input
                                 type="text"
-                                name="video-title"
-                                id="video-title"
-                                autoComplete="videoTitle"
-                                placeholder="Enter your video title"
-                                maxLength={100}
-                                value={videoTitle}
+                                name="song-name"
+                                id="song-name"
+                                autoComplete="songName"
+                                placeholder="Enter your song name"
+                                maxLength={50}
+                                value={songName}
                                 onChange={(event)=>{
-                                    setVideoTitle(event.target.value);
-                                    setVideoTitleLength(100 - event.target.value.length);
-                                    setThumbnailName(event.target.value);
-                                    if(100 - event.target.value.length === 0){
+                                    setSongName(event.target.value);
+                                    setSongNameLength(50 - event.target.value.length);
+                                    if(50 - event.target.value.length === 0){
                                         toast({
-                                            title: "You've reached maximum title length",
-                                            description: "Title should be maximum of 100 characters",
+                                            title: "You've reached max song name length",
+                                            description: "Song name should be maximum of 50 characters",
                                             status: 'error',
                                             duration: 2000,
                                             isClosable: true,
@@ -214,11 +454,11 @@ const SubmitVideo = () => {
                                 }}
                                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             />
-                            <p>{videoTitleLength} characters left</p>
+                            <p>{songNameLength} characters left</p>
                             </div>
                         </div>
 
-                        {/* Video Description */}
+                        {/* Artist Name */}
                         <div className="">
                             <label htmlFor="video-desc" className="block text-sm font-semibold leading-6 text-gray-900">
                             Artist Name *
@@ -249,6 +489,38 @@ const SubmitVideo = () => {
                                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             />
                             <p>{artistNameLength} characters left</p>
+                            </div>
+                        </div>
+
+                        {/* Video Title */}
+                        <div className="sm:col-span-2">
+                            <label htmlFor="video-title" className="block text-sm font-semibold leading-6 text-gray-900">Video Title *</label>           
+                            <div className="mt-2.5">
+                            <input
+                                type="text"
+                                name="video-title"
+                                id="video-title"
+                                autoComplete="videoTitle"
+                                placeholder="Enter your video title"
+                                maxLength={100}
+                                value={videoTitle}
+                                onChange={(event)=>{
+                                    setVideoTitle(event.target.value);
+                                    setVideoTitleLength(100 - event.target.value.length);
+                                    if(100 - event.target.value.length === 0){
+                                        toast({
+                                            title: "You've reached maximum title length",
+                                            description: "Title should be maximum of 100 characters",
+                                            status: 'error',
+                                            duration: 2000,
+                                            isClosable: true,
+                                            position: 'top',
+                                        });
+                                    }
+                                }}
+                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            />
+                            <p>{videoTitleLength} characters left</p>
                             </div>
                         </div>
 
@@ -286,63 +558,74 @@ const SubmitVideo = () => {
                                 autoComplete="youtubeChannel"
                                 placeholder="Enter your YouTube channel link"
                                 maxLength={5000}
-                                onChange={(event)=>{guardarArchivo(event)}}
                                 value={youtubeAccount}
-                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            />
-                            </div>
-                        </div>
-
-                        {/* Video Thumbnail */}
-                        <div className="sm:col-span-2">
-                            <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">
-                            Upload Video *
-                            </label>
-                            <div className="mt-2.5">
-                            <input
-                                type="file"
-                                name="video-thumbnail"
-                                id="video-thumbnail"
-                                accept="video/*"
                                 onChange={(event)=>{
-                                    setVideoFile(event.target.files[0]);
-                                    setIsVideoAttached(true);
-                                    // setVideoThumbnailPreview(URL.createObjectURL(event.target.files[0]));
+                                    setYoutubeAccount(event.target.value);
                                 }}
                                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             />
                             </div>
                         </div>
 
-                        {/* Preview Video Thumbnail */}
-                        {/* {
-                            isThumbnailAttached
-                            ?
-                            <div className="sm:col-span-2">
-                                <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">Thumbnail Preview</label>
-                                <img
-                                    src={videoThumbnailPreview}
-                                    className="sm:w-[57rem] md:-ml-4 lg:-ml-0"
-                                    width={1280}
-                                    height={720}
-                                />
+                        {/* Video Thumbnail*/}
+                        <div className="sm:col-span-2">
+                            <label htmlFor="video-thumbnail" className="block text-sm font-semibold leading-6 text-gray-900">
+                            Upload Thumbnail *
+                            </label>
+                            <p><b className="text-xs"><u>*Your song name and thumbnail name should be same*</u></b></p>
+                            <div className="mt-2.5 lg:flex">
+                            <input
+                                type="file"
+                                name="video-thumbnail"
+                                id="video-thumbnail"
+                                accept="image/*"
+                                onChange={(event)=>{
+                                    setThumbnailName(event.target.files[0].name);
+                                    setVideoThumbnail(event.target.files[0]);
+                                    setIsThumbnailAttached(true);
+                                    // setVideoThumbnailPreview(URL.createObjectURL(event.target.files[0]));
+                                }}
+                                className="block lg:w-1/2 md:w-full w-full rounded-md border-0 mx-1 px-3.5 py-2 md:my-2 my-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 file-selector-common"
+                            />
+                                <button
+                                    type="submit"
+                                    onClick={uploadVideoThumbnail}
+                                    className="block lg:w-1/2 md:w-full w-full rounded-md bg-indigo-600 mx-1 px-3.5 py-2.5 md:my-2 my-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                Upload Thumbnail
+                                </button>
                             </div>
-                            :
-                            <></>
-                        } */}
+                        </div>
 
-                        {/* Video file */}
-                        {/* <div className="sm:col-span-2">
+                        {/* Video File */}
+                        <div className="sm:col-span-2">
                             <label htmlFor="video-file" className="block text-sm font-semibold leading-6 text-gray-900">
                             Upload Video *
                             </label>
-                            <div className="mt-2.5">
-                            <Link
+                            <p><b className="text-xs"><u>*Your song name and video name should be same*</u></b></p>
+                            <div className="mt-2.5 lg:flex">
+                            <input
+                                type="file"
+                                name="video-file"
                                 id="video-file"
-                                className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            >Upload Video to Drive</Link>
+                                accept="video/*"
+                                onChange={(event)=>{
+                                    console.log(event.target.files[0].name);
+                                    setVideoFileName(event.target.files[0].name);
+                                    setVideoFile(event.target.files[0]);
+                                    setIsVideoAttached(true);
+                                }}
+                                className="block lg:w-1/2 md:w-full w-full rounded-md border-0 mx-1 px-3.5 py-2 md:my-2 my-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 file-selector-common"
+                            />
+                            <button
+                                    type="submit"
+                                    onClick={uploadVideoFile}
+                                    className="block lg:w-1/2 md:w-full w-full rounded-md bg-indigo-600 mx-1 px-3.5 py-2.5 md:my-2 my-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                Upload Video
+                                </button>
                             </div>
-                        </div> */}
+                        </div>
 
                         <div className="sm:col-span-2">
                             <label htmlFor="message" className="block text-sm font-semibold leading-6 text-gray-900">
@@ -375,8 +658,8 @@ const SubmitVideo = () => {
                             </div>
                             <p>{videoDescLength} characters left</p>
                         </div>
-
-                        </div>
+                    </div>
+                        
                         <div className="mt-10">
                         <button
                             type="submit"

@@ -46,8 +46,8 @@ const CrewMembers = () => {
               // role: 'Rapper/Lyricist',
               imageUrl: '',
               },
-            youtubeChannel: '',
-            instagramHandle: ''
+            youtubeChannel: 'https://youtube.com/@schooltown_music',
+            instagramHandle: 'https://instagram.com/yours_.darshan?igshid=ZDdkNTZiNTM='
           },
     ];
 

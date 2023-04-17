@@ -6,6 +6,7 @@ import { getFirestore, addDoc, collection } from 'firebase/firestore';
 import { getDatabase } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate, Link } from 'react-router-dom';
+import styled from "styled-components";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAthGH887jVfq1cynOlwZHb4vCvgWui0Kw",
@@ -15,6 +16,18 @@ const firebaseConfig = {
     messagingSenderId: "690053929167",
     appId: "1:690053929167:web:e8e180b9b92e7b2a48bfba"
   };
+
+const Bar = styled.div`
+  position: fixed;
+  height: 6px;
+  border-radius: 0px 2px 0px 0px;
+  background: linear-gradient(
+    90deg,
+    rgba(109, 227, 219, 1) 0%,
+    rgba(132, 115, 177, 1) 100%,
+    rgba(3, 9, 112, 1) 100%
+  );
+`;
 
 const SubmitVideo = () => {
 
@@ -46,7 +59,8 @@ const SubmitVideo = () => {
     const [videoFileUrl, setVideoFileUrl] = React.useState("");
     const [isVideoUploaded, setIsVideoUploaded] = React.useState(false);
 
-    const [progressPercentage, setProgressPercentage] = React.useState(0);
+    const [thumbnailProgressPercentage, setThumbnailProgressPercentage] = React.useState(0);
+    const [videoProgressPercentage, setVideoProgressPercentage] = React.useState(0);
 
     const [userId, setUserId] = React.useState("");
     const [userDisplayName, setUserDisplayName] = React.useState("");
@@ -168,6 +182,8 @@ const SubmitVideo = () => {
                 (snapshot) => {
                     // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    const roundedOffProgress = Math.round(progress);
+                    setThumbnailProgressPercentage(roundedOffProgress);
                     console.log('Upload is ' + progress + '% done');
                     switch (snapshot.state) {
                     case 'paused':
@@ -275,7 +291,8 @@ const SubmitVideo = () => {
                 (snapshot) => {
                     // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setProgressPercentage(progress);
+                    const roundedOffProgress = Math.round(progress);
+                    setVideoProgressPercentage(roundedOffProgress);
                     console.log('Upload is ' + progress + '% done');
                     switch (snapshot.state) {
                     case 'paused':
@@ -595,6 +612,16 @@ const SubmitVideo = () => {
                                 Upload Thumbnail
                                 </button>
                             </div>
+                            <div className="flex items-center gap-x-1 text-xs artist-title">
+                                {
+                                    thumbnailProgressPercentage != 100
+                                    ?
+                                    <h1 className="relative z-10 rounded-full lg:mx-0 px-3 py-1.5 font-bold text-lg progress-indicator bg-purple-500">{thumbnailProgressPercentage} %</h1>
+                                    :
+                                    <h1 className="relative z-10 rounded-full lg:mx-0 px-3 py-1.5 font-bold text-lg progress-indicator bg-green-500">{thumbnailProgressPercentage} %</h1>
+                                }
+                               <p className="font-bold">uploaded</p>
+                            </div>
                         </div>
 
                         {/* Video File */}
@@ -624,6 +651,16 @@ const SubmitVideo = () => {
                                 >
                                 Upload Video
                                 </button>
+                            </div>
+                            <div className="flex items-center gap-x-1 text-xs artist-title">
+                            {
+                                    videoProgressPercentage != 100
+                                    ?
+                                    <h1 className="relative z-10 rounded-full lg:mx-0 px-3 py-1.5 font-bold text-lg progress-indicator bg-purple-500">{videoProgressPercentage} %</h1>
+                                    :
+                                    <h1 className="relative z-10 rounded-full lg:mx-0 px-3 py-1.5 font-bold text-lg progress-indicator bg-green-500">{videoProgressPercentage} %</h1>
+                                }
+                               <p className="font-bold">uploaded</p>
                             </div>
                         </div>
 

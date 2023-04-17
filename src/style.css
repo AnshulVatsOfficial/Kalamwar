@@ -68,3 +68,9 @@ body{
 .social-btn .insta-btn:hover{
     color: white;
 }
+
+.artist-title .progress-indicator{
+    /* background-color: #C900FF; */
+    color: white;
+    padding: 0px 25px;
+}

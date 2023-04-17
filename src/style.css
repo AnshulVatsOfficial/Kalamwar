@@ -42,3 +42,29 @@ body{
     border: 1.5px solid #4f46e5;
     color: #4f46e5;
 }
+
+.artist-title a{
+    background-color: #C900FF;
+    color: white;
+}
+
+.artist-logo{
+    background-color: #4f46e5;
+    color: white;
+}
+
+.social-btn .yt-btn{
+    color: red;
+}
+
+.social-btn .yt-btn:hover{
+    color: white;
+}
+
+.social-btn .insta-btn{
+    color: rgb(255, 0, 157);
+}
+
+.social-btn .insta-btn:hover{
+    color: white;
+}

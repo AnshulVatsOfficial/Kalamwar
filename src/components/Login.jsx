@@ -135,10 +135,10 @@ const Login = () => {
                     width={2432}
                     height={1442}
                 />
-                <div className="isolate bg-white px-6 py-0 sm:py-0 md:py-0 lg:py-16 lg:px-8">
+                <div className="isolate bg-white px-6 py-0 sm:py-0 md:py-0 md:mt-0 lg:py-16 lg:px-8">
                     <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Create Account/Login</h2>
-                        <p className="mt-2 text-lg leading-8 text-gray-600">
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:mt-4">Create Account/Login</h2>
+                        <p className="lg:mt-2 text-lg leading-8 text-gray-600">
                         Create a new account or Login with existing account
                         </p>
                     </div>
@@ -180,7 +180,7 @@ const Login = () => {
                         </div>
                     </div>
                     </div>
-                    <div className="mt-5 flex lg:flex-row md:flex-col sm:flex-col flex-col">
+                    <div className="mt-5 flex lg:flex-row md:flex-col sm:flex-col flex-col lg:mb-0 md:mb-4 sm:mb-4 mb-4">
                     <button
                         type="submit"
                         onClick={allowUserSignIn}

@@ -1,0 +1,15 @@
+@media screen and (max-width: 338px){
+    .social-profile-and-btn{
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .social-btn{
+        width: 100%;
+    }
+
+    .artist-logo{
+        width: 4rem;
+        height: 4rem;
+    }
+}
